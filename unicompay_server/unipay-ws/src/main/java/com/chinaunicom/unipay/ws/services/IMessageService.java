@@ -33,7 +33,8 @@ public interface IMessageService {
             ALIPAY_QCODE(109),//支付宝扫码
             TELECOM(111),//电信验证码
             MOBILE(112),//移动验证码
-            WEIXIN_QCODE(113);//微信宝扫码
+            WEIXIN_QCODE(113),//微信宝扫码
+            SMS(114);//微信宝扫码
 
             private final int value;
 
