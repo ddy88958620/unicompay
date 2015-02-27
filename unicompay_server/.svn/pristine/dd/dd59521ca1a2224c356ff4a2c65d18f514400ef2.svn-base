@@ -1,4 +1,0 @@
-oracle.driver=${oracle.driver}
-oracle.url=${oracle.url}
-oracle.username=${oracle.username}
-oracle.password=${oracle.password}
