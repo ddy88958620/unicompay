@@ -1,0 +1,46 @@
+log4j.rootLogger=INFO,CONSOLE
+#log4j.appender.FILE=org.apache.log4j.RollingFileAppender
+#log4j.appender.FILE.Threshold=ERROR
+#log4j.appender.FILE.File=${catalina.base}/logs/log.9001.log
+#log4j.appender.FILE.Append=true
+#log4j.appender.FILE.MaxFileSize=2MB
+#log4j.appender.FILE.MaxBackupIndex=10
+#log4j.appender.FILE.layout=org.apache.log4j.PatternLayout
+#log4j.appender.FILE.layout.ConversionPattern=%d - %-4r %-5p %x -%m%n
+
+log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender
+log4j.appender.CONSOLE.Threshold=INFO
+log4j.appender.CONSOLE.Encoding=UTF-8
+log4j.appender.CONSOLE.Target=System.out
+log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout
+log4j.appender.CONSOLE.layout.ConversionPattern=[DIC] %d{HH:mm:ss} %l%n%m%n
+
+log4j.logger.vac=INFO, vac
+log4j.appender.vac=org.apache.log4j.DailyRollingFileAppender
+log4j.appender.vac.layout=org.apache.log4j.PatternLayout
+log4j.appender.vac.layout.ConversionPattern=%d{yyyy-MM-dd_HH:mm:ss} %m%n
+log4j.appender.vac.append=true
+log4j.appender.vac.file=${catalina.base}/logs/vac.log
+log4j.appender.vac.MaxBackupIndex=60
+
+
+log4j.logger.vac_error=INFO, vac_error
+log4j.appender.vac_error=org.apache.log4j.DailyRollingFileAppender
+log4j.appender.vac_error.layout=org.apache.log4j.PatternLayout
+log4j.appender.vac_error.layout.ConversionPattern=%d{yyyy-MM-dd_HH:mm:ss} %m%n
+log4j.appender.vac_error.append=true
+log4j.appender.vac_error.file=${catalina.base}/logs/error_vac.log
+log4j.appender.vac_error.MaxBackupIndex=60
+
+
+log4j.logger.record=INFO, record
+log4j.appender.record=org.apache.log4j.DailyRollingFileAppender
+log4j.appender.record.layout=org.apache.log4j.PatternLayout
+log4j.appender.record.layout.ConversionPattern=%d{yyyy-MM-dd_HH:mm:ss} %m%n
+log4j.appender.record.append=true
+log4j.appender.record.file=${catalina.base}/logs/request_record.log
+log4j.appender.record.MaxBackupIndex=60
+
+
+
+

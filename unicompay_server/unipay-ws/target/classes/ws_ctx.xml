@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.1.xsd">
+
+    <import resource="classpath*:core_ctx.xml"/>
+    <context:component-scan base-package="com.chinaunicom.unipay.ws"/>
+
+    <bean id="connectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager">
+        <property name="maxTotal" value="200"/>
+        <property name="defaultMaxPerRoute" value="30"/>
+        <property name="defaultSocketConfig">
+            <bean class="org.apache.http.config.SocketConfig">
+                <constructor-arg name="soKeepAlive" value="true"/>
+                <constructor-arg name="soLinger" value="0"/>
+                <constructor-arg name="soReuseAddress" value="true"/>
+                <constructor-arg name="soTimeout" value="5000"/>
+                <constructor-arg name="tcpNoDelay" value="true"/>
+            </bean>
+        </property>
+    </bean>
+    <bean id="clientBuilder" class="org.apache.http.impl.client.HttpClientBuilder" factory-method="create">
+        <property name="connectionManager" ref="connectionManager"/>
+        <property name="retryHandler" ref="retryHandler"/>
+    </bean>
+    <bean factory-bean="clientBuilder" factory-method="build"/>
+
+    <bean class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">
+        <constructor-arg value="20"/>
+    </bean>
+
+    <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <property name="minIdle" value="100" />
+        <property name="maxIdle" value="500" />
+        <property name="maxTotal" value="500" />
+        <property name="testOnBorrow" value="true" />
+        <property name="testOnReturn" value="true" />
+        <property name="maxWaitMillis" value="5000" />
+        <property name="testWhileIdle" value="true" />
+    </bean>
+
+    <beans profile="pro">
+        <bean id="jedisPool" class="redis.clients.jedis.JedisSentinelPool">
+            <constructor-arg value="unipay"/>
+            <constructor-arg>
+                <set>
+                    <value>${redis.ip1}</value>
+                    <value>${redis.ip2}</value>
+                </set>
+            </constructor-arg>
+            <constructor-arg ref="jedisPoolConfig"/>
+        </bean>
+    </beans>
+
+    <beans profile="test">
+        <bean id="jedisPool" class="redis.clients.jedis.JedisPool">
+            <constructor-arg ref="jedisPoolConfig"/>
+            <constructor-arg value="127.0.0.1"/>
+            <constructor-arg value="6379"/>
+            <constructor-arg value="0"/>
+        </bean>
+    </beans>
+
+    <beans profile="dev">
+        <bean id="jedisPool" class="redis.clients.jedis.JedisPool">
+            <constructor-arg ref="jedisPoolConfig"/>
+            <constructor-arg value="127.0.0.1"/>
+            <constructor-arg value="6379"/>
+            <constructor-arg value="0"/>
+        </bean>
+    </beans>
+
+</beans>

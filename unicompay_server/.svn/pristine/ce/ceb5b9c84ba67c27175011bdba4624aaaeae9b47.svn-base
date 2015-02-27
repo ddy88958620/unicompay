@@ -1,0 +1,45 @@
+#mysql connetion
+driverClassName=com.mysql.jdbc.Driver
+url=jdbc:mysql://localhost:3306/webchat?useUnicode=true&amp;characterEncoding=UTF-8
+username=root
+password=123456
+initialSize=10
+maxActive=300
+maxIdle=300
+minIdle=10
+testOnBorrow=true
+testOnReturn=true
+testWhileIdle=true
+validationQuery=SELECT 1 FROM DUAL
+timeBetweenEvictionRunsMillis=1200000
+minEvictableIdleTimeMillis=1200000
+numTestsPerEvictionRun=100
+removeAbandoned=true
+removeAbandonedTimeout=100
+mapperLocations=classpath*:mapper/mysql/*.xml
+
+com.unicom.redis.master.host=210.22.123.94
+com.unicom.redis.master.port=6379
+com.unicom.redis.master.maxactive=50
+com.unicom.redis.master.maxidle=50
+com.unicom.redis.master.maxwait=3000
+com.unicom.redis.master.testonborrow=true
+
+#driverClassName=oracle.jdbc.driver.OracleDriver
+#url=jdbc:oracle:thin:@10.95.98.152:1521:zxin
+#username=zxdbm_misp
+#password=zxin_smap
+#initialSize=5
+#maxActive=15
+#maxIdle=15
+#minIdle=5
+#testOnBorrow=true
+#testOnReturn=true
+#testWhileIdle=true
+#validationQuery=SELECT 1 FROM DUAL
+#timeBetweenEvictionRunsMillis=1200000
+#minEvictableIdleTimeMillis=1200000
+#numTestsPerEvictionRun=100
+#removeAbandoned=true
+#removeAbandonedTimeout=100
+#mapperLocations=classpath*:mapper/oracle/*.xml

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">  
+  
+<mapper namespace="chargePoint">
+
+	<select id="getChargePoint" parameterType="ChargePoint" resultType="ChargePoint">
+        select mc.cntid as appid,       mc.cntindex as appindex,       mc.cntname as appname,       mb.prmspcode as cpid,       msd.prmcpid as prmcpid,
+        mc.ownername1 as cpname,       a.pointid as pointid,       m.serviceid as serviceid,       a.pointname as pointname,       a.pointvalue as fee,
+        t.telecomid as telecomid,       c.cmccid as cmccid
+        from zxdbm_appstore.appc_charging_point a
+        join zxdbm_misp.mcnt_content mc    on a.cntindex = mc.cntindex
+        join zxdbm_misp.muser_basicinfo mb    on mb.userindex = mc.ownerindex1   and (mb.usertype = 2 or mb.usertype = 6)
+        join zxdbm_appstore.muser_signup_develop msd    on mb.userindex = msd.userindex
+        left join zxdbm_appstore.msys_messageservice m    on a.serviceid = m.serviceid
+        left join telecom_chargepoint t    on a.pointvalue = t.fee
+        left join cmcc_chargepoint c    on a.pointvalue = c.fee
+        where a.pointid = #{pointid}
+
+    </select>
+
+</mapper>

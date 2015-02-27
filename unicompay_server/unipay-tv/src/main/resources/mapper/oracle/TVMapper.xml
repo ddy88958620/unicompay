@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">  
+  
+<mapper namespace="tv">
+
+	<insert id="addTV" parameterType="TV">
+		INSERT INTO TV (imei,mobile_phone,mobile_encrypted,access_token,created,code,last_verify) VALUES (#{imei},#{mobilePhone},null,#{accessToken},TO_CHAR(SYSDATE, 'YYYYMMDDhh24miss'),null,null)
+	</insert>
+
+	<select id="getTV" parameterType="TV" resultType="TV">
+		SELECT imei AS imei,mobile_phone AS mobilePhone,access_token AS accessToken,code AS code
+		FROM TV
+		WHERE 1=1
+		<if test="imei != null">
+		AND imei=#{imei}
+		</if>
+		<if test="mobilePhone != null">
+		AND mobile_phone=#{mobilePhone}
+		</if>
+	</select>
+	
+	<update id="updateToGetCodeState" parameterType="TV">
+		UPDATE tv SET access_token=#{accessToken},mobile_phone=#{mobilePhone},code=null WHERE imei=#{imei}
+	</update>
+	
+	<update id="unbindRelationship" parameterType="TV">
+		UPDATE tv SET mobile_phone=null,access_token=null,code=null WHERE 
+		<if test="imei == null">
+			imei is null
+		</if>
+		<if test="imei != null">
+		imei=#{imei}
+		</if>
+		<if test="mobilePhone != null">
+		OR mobile_phone = #{mobilePhone}
+		</if>
+	</update>
+	
+	<update id="saveBindRelationship" parameterType="TV">
+		UPDATE tv SET code=#{code},last_verify=TO_CHAR(SYSDATE, 'YYYYMMDDhh24miss') WHERE imei = #{imei}
+	</update>
+	
+</mapper>

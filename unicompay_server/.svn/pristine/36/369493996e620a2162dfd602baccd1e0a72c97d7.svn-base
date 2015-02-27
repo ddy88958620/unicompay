@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.1.xsd">
+
+    <import resource="classpath*:core_ctx.xml"/>
+    <context:component-scan base-package="com.chinaunicom.unipay.ws"/>
+
+    <bean id="connectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager">
+        <property name="maxTotal" value="${poolcon.maxTotal}"/>
+        <property name="defaultMaxPerRoute" value="${poolcon.defaultMaxPerRoute}"/>
+        <property name="defaultSocketConfig">
+            <bean class="org.apache.http.config.SocketConfig">
+                <constructor-arg name="soKeepAlive" value="${poolcon.soKeepAlive}"/>
+                <constructor-arg name="soLinger" value="${poolcon.soLinger}"/>
+                <constructor-arg name="soReuseAddress" value="${poolcon.soReuseAddress}"/>
+                <constructor-arg name="soTimeout" value="${poolcon.soTimeout}"/>
+                <constructor-arg name="tcpNoDelay" value="${poolcon.tcpNoDelay}"/>
+            </bean>
+        </property>
+    </bean>
+    <bean id="clientBuilder" class="org.apache.http.impl.client.HttpClientBuilder" factory-method="create">
+        <property name="connectionManager" ref="connectionManager"/>
+        <property name="retryHandler" ref="retryHandler"/>
+    </bean>
+    <bean factory-bean="clientBuilder" factory-method="build"/>
+
+    <bean class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">
+        <constructor-arg value="20"/>
+    </bean>
+
+    <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <property name="minIdle" value="${redis.pool.minIdle}" />
+        <property name="maxIdle" value="${redis.pool.maxIdle}" />
+        <property name="maxTotal" value="${redis.pool.maxTotal}" />
+        <property name="testOnBorrow" value="${redis.pool.testOnBorrow}" />
+        <property name="testOnReturn" value="${redis.pool.testOnReturn}" />
+        <property name="maxWaitMillis" value="${redis.pool.maxWait}" />
+        <property name="testWhileIdle" value="${redis.pool.testWhileIdle}" />
+    </bean>
+
+    <beans profile="pro">
+        <bean id="jedisPool" class="redis.clients.jedis.JedisSentinelPool">
+            <constructor-arg value="unipay"/>
+            <constructor-arg>
+                <set>
+                    <value>${redis.ip1}</value>
+                    <value>${redis.ip2}</value>
+                </set>
+            </constructor-arg>
+            <constructor-arg ref="jedisPoolConfig"/>
+        </bean>
+    </beans>
+
+    <beans profile="test">
+        <bean id="jedisPool" class="redis.clients.jedis.JedisPool">
+            <constructor-arg ref="jedisPoolConfig"/>
+            <constructor-arg value="${redis.ip}"/>
+            <constructor-arg value="${redis.port}"/>
+            <constructor-arg value="${redis.timeout}"/>
+        </bean>
+    </beans>
+
+    <beans profile="dev">
+        <bean id="jedisPool" class="redis.clients.jedis.JedisPool">
+            <constructor-arg ref="jedisPoolConfig"/>
+            <constructor-arg value="${redis.ip}"/>
+            <constructor-arg value="${redis.port}"/>
+            <constructor-arg value="${redis.timeout}"/>
+        </bean>
+    </beans>
+
+</beans>

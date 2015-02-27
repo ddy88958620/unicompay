@@ -1,0 +1,44 @@
+package com.chinaunicom.unipay.ws.controllers;
+
+import com.chinaunicom.unipay.ws.persistence.Order;
+import com.chinaunicom.unipay.ws.services.UnipayException;
+import com.jfinal.aop.Interceptor;
+import com.jfinal.core.ActionInvocation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * User: Frank
+ * Date: 2014/10/30
+ * Time: 17:29
+ */
+public class ExceptionHandler implements Interceptor {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Override
+    public void intercept(ActionInvocation ai) {
+
+        Response rsp;
+        try {
+            ai.invoke();
+            return;
+        } catch (ReplayException e) {
+            logger.warn(e.getMessage() + "-->" + e.getData(), e);
+            rsp = new Response(399, e.getMessage());
+        } catch (UnipayException e) {
+            Order order = Order.dao.findById(e.getOrderid());
+            if(order != null) {
+                order.setPayresult(e.getCode()).setStatus(1).update();
+            }
+            logger.warn(e.getMessage() + ", orderid: " + e.getOrderid(), e);
+            rsp = new Response(Integer.parseInt(e.getCode()), e.getMessage());
+        } catch (Exception e) {
+            logger.error("系统内部错误！", e);
+            rsp = new Response(399, e.getMessage());
+        }
+
+        ai.getController().renderJson(rsp);
+
+    }
+}
