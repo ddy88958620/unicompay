@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="unipay-ws:war">
+    <output-path>$PROJECT_DIR$/unipay-ws/target</output-path>
+    <root id="archive" name="unicompay.war">
+      <element id="artifact" artifact-name="unipay-ws:war exploded" />
+    </root>
+  </artifact>
+</component>
