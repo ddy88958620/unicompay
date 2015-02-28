@@ -2,16 +2,23 @@ package com.chinaunicom.unipay.ws.controllers;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.chinaunicom.unipay.ws.persistence.ChargePoint;
 import com.chinaunicom.unipay.ws.persistence.Order;
+import com.chinaunicom.unipay.ws.persistence.UserInfo;
 import com.chinaunicom.unipay.ws.services.ICPService;
 import com.chinaunicom.unipay.ws.services.IMessageService;
 import com.chinaunicom.unipay.ws.services.ISMSService;
+import com.chinaunicom.unipay.ws.utils.MD5;
 import com.chinaunicom.unipay.ws.utils.RedisUtil;
+import com.chinaunicom.unipay.ws.utils.Tools;
 import com.chinaunicom.unipay.ws.utils.VerifyUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.tools.Tool;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -22,6 +29,9 @@ import static com.chinaunicom.unipay.ws.utils.RedisUtil.MINUTE;
  */
 public class SMSController extends WSController{
     private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    private final String mid = "";
+    private final String appid = "";
     @Resource RedisUtil ru;
     @Resource
     ISMSService iss;
@@ -30,8 +40,50 @@ public class SMSController extends WSController{
     class SmsRequest extends SDKRequest{
 
     }
+    class SmsRes extends Response{
+        private String smscontent;
+        private String smsaddress;
+
+        SmsRes(String smscontent,String smsaddress){
+            this.smscontent = smscontent;
+            this.smsaddress = smsaddress;
+        }
+    }
     public void pay() throws Exception {
+
+        final HttpServletRequest r = getRequest();
+
         SmsRequest sr  = getJSONObject(SmsRequest.class);
+
+        Order order = createOrder(sr);
+        String orderid = order.getOrderid();
+
+        ISMSService.SmsRequest isr = new ISMSService.SmsRequest();
+
+        isr.setMerchantid(mid);
+        isr.setAppid(appid);
+        isr.setLinkid(orderid);
+        isr.setPaypoint("");
+        isr.setPrice("");
+        isr.setIp(StringUtils.isEmpty(r.getHeader("X-Real-IP")) ? r.getRemoteAddr() : r.getHeader("X-Real-IP"));
+        isr.setImsi(sr.getImsi());
+        isr.setMac(sr.getTerminalid());
+        isr.setOrdertime(Tools.getCurrentTime());
+        isr.setNotifyurl("");
+
+        Map<String,String> map = JSON.parseObject(JSON.toJSONString(isr),new TypeReference<TreeMap>(){});
+        String verify = VerifyUtil.getVerify(map);
+
+        isr.setMd5(MD5.md5Digest(verify));
+
+        ISMSService.SmsResponse res = iss.charge(isr);
+        Response sres= null;
+        if(res.isSuccess()){
+            sres = new SmsRes(res.getSmscontent(),res.getSmsaddress());
+        }else {
+            sres = new Response(399,res.getErrormsg());
+        }
+        renderJson(sres);
 
     }
     class CallbackResponse{
@@ -182,5 +234,47 @@ public class SMSController extends WSController{
             logger.error("消息通知失败", e);
         }
 
+    }
+    private Order createOrder(SmsRequest pay) throws Exception {
+
+        String consumecode = pay.getConsumecode();
+        String cpid = pay.getCpid();
+        String channelid = pay.getChannelid();
+
+        if(!cps.checkAuth(consumecode, cpid, channelid)){
+            logger.debug("[" + pay.getCporderid() + "]鉴权失败");
+            throw new Exception("[" + pay.getCporderid() + "]鉴权失败");
+        }
+
+        UserInfo userInfo = UserInfo.dao.getByCpid(cpid);
+        ChargePoint point = ChargePoint.dao.getByConsumecode(consumecode);
+
+        Order o = new Order();
+        o.setOrderid(Tools.getUUID());
+        o.setEncryptparam("11");
+        o.setOrderid_3rd(pay.getCporderid());
+        o.setOrdertime(pay.getOrdertime());
+        o.setServicekey(pay.getServiceid());
+        o.setImsi(pay.getImsi());
+        o.setUseraccount(pay.getIdentityid());
+        o.setPaytime(Tools.getCurrentTime());
+        o.setSdkversion(pay.getSdkversion());
+        o.setChannelid(channelid);
+        o.setEmpno(pay.getAssistantid());
+        o.setCpid(cpid);
+        o.setPointid(consumecode);
+
+        o.setUserindex(userInfo.getUserindex());
+        o.setUserid(userInfo.getUserid());
+        o.setProductindex(point.getCntindex());
+        o.setProductid(point.getProduct().getCntid());
+        o.setProductname(point.getProduct().getCntname());
+        o.setPointindex(point.getPointindex());
+        o.setPointname(point.getPointname());
+        o.setPayfee(point.getPointvalue());
+
+        o.save();
+
+        return o;
     }
 }
