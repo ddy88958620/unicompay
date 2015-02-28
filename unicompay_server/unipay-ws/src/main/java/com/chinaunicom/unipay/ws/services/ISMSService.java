@@ -112,6 +112,56 @@ public interface ISMSService {
         private String sendnum;
         private String smscontent;
         private String smsaddress;
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public String getErrormsg() {
+            return errormsg;
+        }
+
+        public void setErrormsg(String errormsg) {
+            this.errormsg = errormsg;
+        }
+
+        public String getPayid() {
+            return payid;
+        }
+
+        public void setPayid(String payid) {
+            this.payid = payid;
+        }
+
+        public String getSendnum() {
+            return sendnum;
+        }
+
+        public void setSendnum(String sendnum) {
+            this.sendnum = sendnum;
+        }
+
+        public String getSmscontent() {
+            return smscontent;
+        }
+
+        public void setSmscontent(String smscontent) {
+            this.smscontent = smscontent;
+        }
+
+        public String getSmsaddress() {
+            return smsaddress;
+        }
+
+        public void setSmsaddress(String smsaddress) {
+            this.smsaddress = smsaddress;
+        }
+
+        public boolean isSuccess(){return "OK".equals(status);}
     }
     public SmsResponse charge(SmsRequest sr) throws Exception;
 }

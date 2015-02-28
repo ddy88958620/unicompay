@@ -20,6 +20,7 @@ public class VerifyUtil {
         return sb.toString();
     }
 
+
     public static void logprint(String msg,Object obj){
         logger.info(msg+ JSON.toJSONString(obj));
     }
